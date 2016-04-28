@@ -19,7 +19,6 @@ var net = require('net');
 var assert = require('assert');
 var assign = require('object-assign');
 
-
 /**
  * implements V8 client debugger protocol as documented here:
  * https://github.com/v8/v8/wiki/Debugging%20Protocol
@@ -30,7 +29,8 @@ module.exports = function() {
   var seq = 0;
   var client;
   var v8Info= false;
-  var buffer = [];
+  var firstChunks = [];
+  var chunks = [];
 
 
   var track = function track(obj, cb) {
@@ -41,7 +41,6 @@ module.exports = function() {
 
   var lookup = function lookup(seq) {
     var copy = assign({}, cbt.table[seq]);
-    delete cbt.table[seq];
     cbt.table[seq] = null;
     return copy;
   };
@@ -56,7 +55,10 @@ module.exports = function() {
    * Embedding-Host: node v5.4.0
    */
   var parseFirstResponse = function parseFirstResponse(data) {
-    data = data.toString();
+    firstChunks.push(data);
+    data = firstChunks.join('');
+    var embeddingHost = /Embedding-Host: ([a-zA-Z]+)/g.exec(data);
+    if (!embeddingHost) { return; }
     var type = /Type: ([a-zA-Z]+)/g.exec(data);
     var version = /V8-Version: ([0-9\.]+)/g.exec(data);
     var protocolVersion = /Protocol-Version: ([0-9\.]+)/g.exec(data);
@@ -68,6 +70,7 @@ module.exports = function() {
 
     v8Info = {version: version[1], protocolVersion: protocolVersion[1]};
     idx = data.indexOf('Content-Length');
+    firstChunks = null
     return data.substring(idx);
   };
 
@@ -81,8 +84,8 @@ module.exports = function() {
    * {"seq":15,"request_seq":1,"type":"response","command":"version","success":true,"body":{"V8Version":"4.6.85.31"},"refs":[],"running":false}
    */
   var parseResponse = function parseResponse(data) {
-    var idx = buffer.push(data) - 1;
-    var messages = buffer.join('').split('Content-Length:');
+    var idx = chunks.push(data) - 1;
+    var messages = chunks.join('').split('Content-Length:');
     var responses = [];
 
     messages.forEach(function(message) {
@@ -98,7 +101,7 @@ module.exports = function() {
         assert(contentLength >= 0);
 
         if (contentLength > 0 && s[2].length === contentLength) {
-          buffer.splice(idx, 1)
+          chunks.splice(idx, 1)
           msg = JSON.parse(s[2]);
           responses.push(msg);
         }
@@ -166,7 +169,7 @@ module.exports = function() {
 
       if (!v8Info) {
         data = parseFirstResponse(data);
-        connectCb(null, v8Info);
+        if (v8Info) { connectCb(null, v8Info); }
       }
       else {
         data = data.toString();
@@ -206,7 +209,6 @@ module.exports = function() {
     obj.seq = ++seq;
     obj.type = 'request';
     packet = JSON.stringify(obj);
-
     if(cb){
       track(obj, cb);
     }

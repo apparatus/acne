@@ -25,10 +25,10 @@ test('connect test', function(t) {
   var acne = acneMod();
   runner.start('data/ping.js', function(ping) {
     acne.connect({}, function(err, v8Info) {
-      t.assert(!err);
+      t.assert(!err, 'connected');
       acne.disconnect();
       runner.stop(ping, function(){
-        t.pass();
+        t.pass('stopped');
       });
     });
   });
@@ -40,7 +40,7 @@ test('connect fail test', function(t) {
 
   var acne = acneMod();
   acne.connect({}, function(err, v8Info) {
-    t.assert(err);
+    t.assert(err, 'connection failed (good)');
   });
 });
 
@@ -51,11 +51,9 @@ test('failed connection test', function(t) {
   var acne = acneMod();
   runner.start('data/ping.js', function(ping) {
     acne.connect({}, function(err, v8Info) {
-      t.assert(!err);
-      runner.stop(ping, function(){
-        t.pass();
-        acne.version(function(err, result) {
-        });
+      t.assert(!err, 'connected');
+      runner.stop(ping, function() {
+        t.pass('stopped');
       });
     });
   });

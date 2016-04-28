@@ -29,7 +29,7 @@ module.exports = function() {
 
 
   var stop = function(child, cb) {
-    child.on('exit', cb);
+    child.once('exit', cb);
     try {
       child.kill();
     } 
