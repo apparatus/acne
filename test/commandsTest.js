@@ -26,6 +26,7 @@ test('step test', function(t) {
   runner.start('data/functions.js', function(ping) {
     acne.connect({}, function(err, v8Info) {
       t.assert(!err);
+      
       acne.resume(function(err) {
         t.assert(!err);
         acne.stepIn(function(err) {

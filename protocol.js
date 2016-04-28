@@ -17,7 +17,7 @@
 
 var net = require('net');
 var assert = require('assert');
-
+var assign = require('object-assign');
 
 
 /**
@@ -40,7 +40,7 @@ module.exports = function() {
 
 
   var lookup = function lookup(seq) {
-    var copy = Object.assign({}, cbt.table[seq]);
+    var copy = assign({}, cbt.table[seq]);
     delete cbt.table[seq];
     cbt.table[seq] = null;
     return copy;
@@ -56,6 +56,7 @@ module.exports = function() {
    * Embedding-Host: node v5.4.0
    */
   var parseFirstResponse = function parseFirstResponse(data) {
+    data = data.toString()
     var type = /Type: ([a-zA-Z]+)/g.exec(data);
     var version = /V8-Version: ([0-9\.]+)/g.exec(data);
     var protocolVersion = /Protocol-Version: ([0-9\.]+)/g.exec(data);
@@ -67,7 +68,7 @@ module.exports = function() {
 
     v8Info = {version: version[1], protocolVersion: protocolVersion[1]};
     idx = data.indexOf('Content-Length');
-    return data.toString().substring(idx);
+    return data.substring(idx);
   };
 
 
@@ -88,7 +89,6 @@ module.exports = function() {
         var contentLength;
         var s = message.split('\r\n');
         var msg;
-
         assert(s.length === 3);
         contentLength = parseInt(s[0].trim(), 10);
         assert(contentLength >= 0);
