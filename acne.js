@@ -14,8 +14,9 @@
 
 'use strict';
 
-var EventEmitter = require('events');
+var EventEmitter = require('events').EventEmitter;
 var util = require('util');
+var assign = require('object-assign');
 
 
 module.exports = function() {
@@ -23,9 +24,7 @@ module.exports = function() {
   var context = require('./context')();
   var commands = require('./commands')(protocol);
 
-  var Emitter = function() {};
-  util.inherits(Emitter, EventEmitter);
-  var emitter = new Emitter();
+  var emitter = new EventEmitter();
 
 
 
@@ -142,6 +141,6 @@ module.exports = function() {
     source: source
   };
 
-  return Object.assign(emitter, execute);
+  return assign(emitter, execute);
 };
 

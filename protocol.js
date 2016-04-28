@@ -17,7 +17,7 @@
 
 var net = require('net');
 var assert = require('assert');
-
+var assign = require('object-assign');
 
 
 /**
@@ -30,7 +30,7 @@ module.exports = function() {
   var seq = 0;
   var client;
   var v8Info= false;
-
+  var buffer = [];
 
 
   var track = function track(obj, cb) {
@@ -40,7 +40,7 @@ module.exports = function() {
 
 
   var lookup = function lookup(seq) {
-    var copy = Object.assign({}, cbt.table[seq]);
+    var copy = assign({}, cbt.table[seq]);
     delete cbt.table[seq];
     cbt.table[seq] = null;
     return copy;
@@ -56,6 +56,7 @@ module.exports = function() {
    * Embedding-Host: node v5.4.0
    */
   var parseFirstResponse = function parseFirstResponse(data) {
+    data = data.toString();
     var type = /Type: ([a-zA-Z]+)/g.exec(data);
     var version = /V8-Version: ([0-9\.]+)/g.exec(data);
     var protocolVersion = /Protocol-Version: ([0-9\.]+)/g.exec(data);
@@ -67,7 +68,7 @@ module.exports = function() {
 
     v8Info = {version: version[1], protocolVersion: protocolVersion[1]};
     idx = data.indexOf('Content-Length');
-    return data.toString().substring(idx);
+    return data.substring(idx);
   };
 
 
@@ -80,7 +81,8 @@ module.exports = function() {
    * {"seq":15,"request_seq":1,"type":"response","command":"version","success":true,"body":{"V8Version":"4.6.85.31"},"refs":[],"running":false}
    */
   var parseResponse = function parseResponse(data) {
-    var messages = data.split('Content-Length:');
+    var idx = buffer.push(data) - 1;
+    var messages = buffer.join('').split('Content-Length:');
     var responses = [];
 
     messages.forEach(function(message) {
@@ -89,11 +91,14 @@ module.exports = function() {
         var s = message.split('\r\n');
         var msg;
 
+        if (s.length < 3) { return; }
+
         assert(s.length === 3);
         contentLength = parseInt(s[0].trim(), 10);
         assert(contentLength >= 0);
 
-        if (contentLength > 0) {
+        if (contentLength > 0 && s[2].length === contentLength) {
+          buffer.splice(idx, 1)
           msg = JSON.parse(s[2]);
           responses.push(msg);
         }
