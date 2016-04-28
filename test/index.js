@@ -1,2 +1,2 @@
-// require('./connectTest');
+require('./connectTest');
 require('./commandsTest');

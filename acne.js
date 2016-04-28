@@ -34,9 +34,11 @@ module.exports = function() {
   var eventCb = function(err, evt) {
     if (evt.event === 'break') {
       context.setFrame(0);
-      commands.backtrace(function(err, result) {
-        context.setContext({breakpoint: evt.body, frames: result.body});
-        emitter.emit(evt.event, context.context());
+      setImmediate(function () {
+        commands.backtrace(function(err, result) {
+          context.setContext({breakpoint: evt.body, frames: result.body});
+          emitter.emit(evt.event, context.context());
+        });
       });
     }
   };
