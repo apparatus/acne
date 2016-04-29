@@ -15,12 +15,12 @@
 'use strict';
 
 var exec = require('child_process').exec;
-
+var path = require('path');
 
 module.exports = function() {
 
   var start = function(name, cb) {
-    var child = exec('node --debug-brk ' + __dirname + '/' + name);
+    var child = exec('node --debug-brk ' + path.join(__dirname, name));
     setTimeout(function() {
       cb(child);
     }, 500);
@@ -29,7 +29,7 @@ module.exports = function() {
 
 
   var stop = function(child, cb) {
-    child.on('exit', cb);
+    child.once('exit', cb);
     try {
       child.kill();
     } 

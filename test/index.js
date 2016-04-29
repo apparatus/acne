@@ -1,0 +1,2 @@
+require('./connectTest');
+require('./commandsTest');

@@ -25,20 +25,20 @@ test('step test', function(t) {
   var acne = acneMod();
   runner.start('data/functions.js', function(ping) {
     acne.connect({}, function(err, v8Info) {
-      t.assert(!err);
+      t.assert(!err, 'connected');
       
       acne.resume(function(err) {
-        t.assert(!err);
+        t.assert(!err, 'resumed');
         acne.stepIn(function(err) {
-          t.assert(!err);
+          t.assert(!err, 'stepped in');
           acne.stepOut(function(err) {
-            t.assert(!err);
+            t.assert(!err, 'stepped out');
             acne.stepOver(function(err) {
-              t.assert(!err);
+              t.assert(!err, 'stepped over');
               acne.resume(function(err) {
-                t.assert(!err);
+                t.assert(!err, 'resumed');
                 runner.stop(ping, function(){
-                  t.pass();
+                  t.pass('stopped');
                 });
               });
             });
@@ -56,24 +56,24 @@ test('scripts test', function(t) {
   var acne = acneMod();
   runner.start('data/scope.js', function(ping) {
     acne.connect({}, function(err, v8Info) {
-      t.assert(!err);
+      t.assert(!err, 'connected');
       acne.resume(function(err) {
-        t.assert(!err);
+        t.assert(!err, 'resumed');
         acne.frame(0, function(err) {
-          t.assert(!err);
+          t.assert(!err, 'frame set');
           acne.scriptList(function(err, list) {
-             t.assert(!err);
-             t.assert(list.body[0].id);
+             t.assert(!err, 'scripts listed');
+             t.assert(list.body[0].id, 'list first item body has an id');
             acne.scriptSource(list.body[0].id, function(err, source) {
-              t.assert(!err);
-              t.assert(source);
+              t.assert(!err, 'script sourced');
+              t.assert(source, 'script source exists');
               acne.source(function(err, source) {
-                t.assert(!err);
-                t.assert(source);
+                t.assert(!err, 'current frame sourced');
+                t.assert(source, 'current frame source exists');
                 acne.resume(function(err) {
-                  t.assert(!err);
+                  t.assert(!err, 'resumed');
                   runner.stop(ping, function(){
-                    t.pass();
+                    t.pass('stopped');
                   });
                 });
               });
@@ -92,19 +92,19 @@ test('scopes test', function(t) {
   var acne = acneMod();
   runner.start('data/scope.js', function(ping) {
     acne.connect({}, function(err, v8Info) {
-      t.assert(!err);
+      t.assert(!err, 'connected');
       acne.resume(function(err) {
-        t.assert(!err);
+        t.assert(!err, 'resumed');
         acne.scopes(function(err, scopes) {
-          t.assert(!err);
-          t.assert(scopes.body.scopes[1]);
+          t.assert(!err, 'scopes succeeded');
+          t.assert(scopes.body.scopes[1], 'first scope exists');
           acne.scope(scopes.body.scopes[1].index, function(err, scope) {
-            t.assert(!err);
-            t.assert(scope);
+            t.assert(!err, 'first scope fetched');
+            t.assert(scope, 'scope exists');
             acne.resume(function(err) {
-              t.assert(!err);
+              t.assert(!err, 'resumed');
               runner.stop(ping, function(){
-                t.pass();
+                t.pass('stopped');
               });
             });
           });
@@ -121,13 +121,12 @@ test('breakpoint test', function(t) {
   var breakCount = 0;
   var cproc;
 
-
   acne.on('break', function(bp) {
     if (breakCount === 0) {
       acne.setBreakpoint(bp.breakpoint.script.id, 17, function(err, result) {
-        t.assert(!err);
+        t.assert(!err, 'breakpoint set');
         acne.resume(function(err) {
-          t.assert(!err);
+          t.assert(!err, 'resumed');
         });
       });
       breakCount = breakCount + 1;
@@ -135,11 +134,11 @@ test('breakpoint test', function(t) {
     }
     if (breakCount === 1) {
       acne.clearBreakpoint(bp.breakpoint.breakpoints[0], function(err, result) {
-        t.assert(!err);
+        t.assert(!err, 'breakpoint cleared');
         acne.resume(function(err) {
-          t.assert(!err);
-          runner.stop(cproc, function(){
-            t.pass();
+          t.assert(!err, 'resumed');
+          runner.stop(cproc, function() {
+            t.pass('stopped');
           });
         });
       });
@@ -150,7 +149,7 @@ test('breakpoint test', function(t) {
   runner.start('data/breakpoint.js', function(ping) {
     cproc = ping;
     acne.connect({}, function(err, v8Info) {
-      t.assert(!err);
+      t.assert(!err, 'connected');
     });
   });
 });

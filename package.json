@@ -27,10 +27,10 @@
   },
   "scripts": {
     "lint": "jshint **/*.js",
-    "test": "jshint **/*.js && tape test/*Test.js",
-    "coverage": "istanbul cover tape **/*Test.js && open ./coverage/lcov-report/index.html",
-    "coverage-check": "istanbul cover tape test/*Test.js && istanbul check-coverage",
-    "commit-check": "jshint **/*.js && tape test/*Test.js"
+    "test": "jshint **/*.js && tape test",
+    "coverage": "istanbul cover tape && open ./coverage/lcov-report/index.html",
+    "coverage-check": "istanbul cover tape test && istanbul check-coverage",
+    "commit-check": "jshint **/*.js && tape test"
   },
   "devDependencies": {
     "istanbul": "^0.4.3",
